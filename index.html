@@ -1,0 +1,819 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>ヴァルディア年代記</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Layout: a war-room table. Map and orders on the left, the chronicle on the right; one column on phones. */
+:root{
+  color-scheme: dark;
+  --ink:#10151c;        /* table */
+  --panel:#18202a;      /* raised surfaces */
+  --line:#2b3644;
+  --sea:#0c1a26;
+  --fg:#e7e2d6;
+  --muted:#93a0ad;
+  --brass:#d2a64a;      /* accent: seals, buttons */
+  --danger:#e06a5a;
+  --ok:#7fc29b;
+  --n-A:#d9b44a; --n-N:#7fb2d9; --n-S:#9a7fd0; --n-K:#c8504a; --n-V:#6aa35a; --n-Z:#d08a4a; --n-I:#8c8f96;
+  --display:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+  --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+}
+html,body{height:100%}
+body{background:var(--ink);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 32px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--ink)}
+button,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.3}
+
+header.bar{background:var(--ink);
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding-block:10px;border-bottom:1px solid var(--line)}
+header.bar h1{font-size:18px;letter-spacing:.06em}
+.date{font-family:var(--display);color:var(--brass);font-size:15px}
+.me{display:flex;align-items:center;gap:8px;margin-left:auto;font-weight:700;font-size:14px}
+.sw{width:12px;height:12px;border-radius:2px;flex:none;display:inline-block}
+.stats{display:flex;gap:6px;flex-wrap:wrap;width:100%}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:2px 9px;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.stat b{font-weight:700}
+.stat .d{font-size:11px;margin-left:3px}
+.up{color:var(--ok)} .down{color:var(--danger)}
+
+main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;max-width:1180px;margin:16px auto 0}
+@media (max-width:860px){main{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+.mapwrap{background:#cdbb8f;border:1px solid var(--line);border-radius:10px;overflow:hidden;position:relative}
+.mapc{display:block;width:100%;height:auto;touch-action:manipulation;background:#cdbb8f}
+#map{cursor:pointer}
+.legend{background:var(--panel);display:flex;flex-wrap:wrap;gap:4px 12px;padding:8px 12px;font-size:12px;color:var(--muted);border-top:1px solid var(--line)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+
+.info{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:14px;min-height:46px}
+.info .nm{font-family:var(--display);font-size:16px}
+.info .sub{color:var(--muted);font-size:13px}
+
+.orders{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.orders h2{font-size:16px}
+.orders label{font-size:13px;color:var(--muted)}
+textarea{width:100%;box-sizing:border-box;min-height:84px;resize:vertical;background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px;line-height:1.6}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:transparent;border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px;color:var(--fg);text-align:left}
+.chip:hover{border-color:var(--brass)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--brass);color:#1a1408;border:0;border-radius:8px;padding:10px 18px;font-weight:700}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line);font-weight:500}
+.status{font-size:13px;color:var(--muted)}
+.status.err{color:var(--danger)}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px;color:var(--muted);font-weight:700}
+.tab[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--brass)}
+
+.chron{display:flex;flex-direction:column;gap:18px}
+.entry{border-left:2px solid var(--line);padding-left:14px}
+.entry .when{font-family:var(--display);color:var(--brass);font-size:13px;letter-spacing:.08em}
+.entry h3{font-size:18px;margin:2px 0 6px}
+.entry .cmd{font-size:13px;color:var(--muted);margin-bottom:6px}
+.entry p{margin:0 0 8px;max-width:65ch}
+.entry ul{margin:0;padding-left:1.1em;font-size:14px}
+.entry li{margin-bottom:4px}
+.entry li b{font-weight:700}
+.advisor{background:var(--ink);border:1px dashed var(--line);border-radius:8px;padding:8px 12px;font-size:14px;margin-top:6px}
+.advisor b{color:var(--brass)}
+
+.nations{display:flex;flex-direction:column;gap:8px}
+.nrow{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:4px 10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.nrow .nn{font-weight:700}
+.nrow .nv{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;grid-column:2/4}
+.nrow .tag{font-size:12px;border-radius:4px;padding:1px 7px;border:1px solid var(--line)}
+.tag.war{color:var(--danger);border-color:var(--danger)}
+.tag.ally{color:var(--ok);border-color:var(--ok)}
+.tag.dead{color:var(--muted)}
+.sit{grid-column:2/4;font-size:13px}
+.sit p{margin:2px 0 0;max-width:65ch}
+.aim{color:var(--brass);font-size:12px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+.att{font-size:11px;border-radius:4px;padding:0 6px;border:1px solid var(--line);color:var(--muted)}
+.a-友好{color:var(--ok);border-color:var(--ok)} .a-警戒{color:var(--brass);border-color:var(--brass)} .a-敵対{color:var(--danger);border-color:var(--danger)}
+.worldnote{background:var(--panel);border:1px solid var(--brass);border-radius:8px;padding:10px 14px;font-size:14px}
+.worldnote b{font-family:var(--display);color:var(--brass)}
+.worldnote p{margin:4px 0 0}
+.diplo{font-size:13px;color:var(--muted)}
+
+/* start screen */
+.start{max-width:880px;margin:24px auto 0;display:flex;flex-direction:column;gap:18px}
+.start .lead h1{font-size:clamp(30px,7vw,46px);letter-spacing:.08em}
+.start .lead p{color:var(--muted);max-width:60ch;margin:8px 0 0}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.ncard{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.ncard[aria-pressed="true"]{border-color:var(--brass);box-shadow:0 0 0 1px var(--brass)}
+.ncard .t{display:flex;align-items:center;gap:8px;font-family:var(--display);font-size:17px}
+.ncard .s{font-size:13px;color:var(--muted)}
+.ncard .v{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.minimap{max-width:520px}
+
+.aiset{border-top:1px solid var(--line);padding-top:8px;font-size:13px}
+.aiset summary{cursor:pointer;color:var(--muted)}
+.aibody{display:flex;flex-direction:column;gap:6px;padding-top:8px}
+.aibody p{margin:0;color:var(--muted)}
+.aibody input,.aibody select{flex:1;min-width:0;background:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--fg);font:inherit}
+.over{background:var(--panel);border:1px solid var(--brass);border-radius:10px;padding:14px}
+.over h2{font-size:22px;color:var(--brass)}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
+.empty{color:var(--muted);font-size:14px}
+</style>
+
+<div id="app"></div>
+
+<script>
+(() => {
+/* ---------- world data ---------- */
+const NATIONS = {
+  A:{name:"アウレア王国",short:"アウレア",capital:"アウレリア",desc:"大陸の中央、豊かな麦畑を治める古い王家。周りを全部の国に囲まれている。",army:120,gold:900,stability:70},
+  N:{name:"ノルドヴァル連邦",short:"ノルドヴァル",capital:"ノルドヘイム",desc:"北の凍った土地の氏族たちの連合。兵は強いがお金と食べ物が足りない。",army:150,gold:400,stability:62},
+  K:{name:"カルザ帝国",short:"カルザ",capital:"カルザグラード",desc:"東の山あいの軍事大国。皇帝は大陸の統一を夢見ている。",army:200,gold:600,stability:55},
+  V:{name:"ヴェルデ森林連合",short:"ヴェルデ",capital:"ヴェルデン",desc:"西の深い森の村々。守りに強く、よそ者を嫌う。",army:90,gold:350,stability:78},
+  S:{name:"セリム商業同盟",short:"セリム",capital:"セリマーレ",desc:"南の港町を結ぶ商人の同盟。お金はあるが兵は雇い物。",army:60,gold:1500,stability:60},
+  Z:{name:"ザハル首長国",short:"ザハル",capital:"ザハラーン",desc:"南東の砂漠の首長たち。隊商の道とラクダ騎兵を持つ。",army:110,gold:700,stability:58},
+  I:{name:"自由都市",short:"自由都市",desc:"どの国にも属さない町。",neutral:true},
+};
+const PLAYABLE = ["A","N","K","V","S","Z"];
+const MAPROWS = [
+  "..NNNN.....",
+  ".NNNNN.KK..",
+  ".VVANN.KKK.",
+  "VVVAAIKKKK.",
+  ".VVAAAIKKK.",
+  ".VVAAISSK..",
+  "..VISSSZZ..",
+  "...SSZZZZZ.",
+  "....ZZZZ...",
+];
+const CAPITALS = {A:[4,4],N:[1,3],K:[2,8],V:[3,1],S:[6,5],Z:[7,7]};
+const TERRAIN = {A:"平原",N:"雪原",K:"山地",V:"森",S:"平原",Z:"砂漠",I:"都市"};
+const SYL = {
+  A:[["アル","ベル","カス","リオ","マル","ソレ","ヴィ","ロザ","エル","トゥ"],["ディア","モント","ヴァーレ","リナ","ガルド","ファン","セル"]],
+  N:[["フロ","スカ","ヘル","ヨル","ヴァル","クロ","オス","ティル"],["ヘイム","ガルド","ヴィク","スタッド","フィヨル","ボルグ","ネス"]],
+  K:[["カル","ドゥ","ラザ","ゴル","ヴォ","ザン","ミル","ボル"],["グラード","ゴラ","スク","ヴァ","ニク","ドル","ヤン"]],
+  V:[["シル","ルー","ミナ","ウィロ","フェン","オル","ネア","リン"],["ウッド","ヘイヴン","グレン","ミア","ローン","デル","ブルク"]],
+  S:[["セラ","マリ","ポル","カプ","ネリ","ヴェン","オルタ","ルチ"],["ポート","マーレ","ノーヴァ","ツィア","リエ","ベル","ラ"]],
+  Z:[["ザハ","アル","カシ","メル","スー","ハダ","タリ","ジャ"],["ラーン","ブール","ミーラ","ダン","カール","サフ","ド"]],
+};
+const FREE = ["オルドン","ペリカ","ハースト","ミドラ"];
+
+function buildProvinces(){
+  const list=[], used=new Set(Object.values(NATIONS).map(n=>n.capital).filter(Boolean)), count={};
+  MAPROWS.forEach((line,r)=>[...line].forEach((ch,c)=>{
+    if(ch===".") return;
+    const id="p"+list.length;
+    const cap = CAPITALS[ch] && CAPITALS[ch][0]===r && CAPITALS[ch][1]===c;
+    let name;
+    if(cap) name=NATIONS[ch].capital;
+    else if(ch==="I") name="自由都市"+FREE[(count.I=(count.I||0)+1)-1];
+    else{
+      const i=(count[ch]=(count[ch]||0)+1);
+      const [pre,suf]=SYL[ch];
+      let k=0;
+      do{ name=pre[(i*3+k)%pre.length]+suf[(i*5+2+k*2)%suf.length]; k++; }while(used.has(name));
+    }
+    used.add(name);
+    list.push({id,r,c,name,owner:ch,origin:ch,capital:!!cap,terrain:TERRAIN[ch]});
+  }));
+  const at={}; list.forEach(p=>at[p.r+","+p.c]=p);
+  const ev=[[1,0],[0,-1],[-1,-1],[-1,0],[-1,1],[0,1]], od=[[1,0],[1,-1],[0,-1],[-1,0],[0,1],[1,1]];
+  list.forEach(p=>{
+    p.nb=[]; let sea=false;
+    (p.r%2?od:ev).forEach(([dc,dr])=>{const q=at[(p.r+dr)+","+(p.c+dc)]; if(q)p.nb.push(q.id); else sea=true;});
+    p.coast=sea;
+    if(p.coast && p.terrain!=="都市" && p.terrain!=="雪原") p.terrain+="・港";
+  });
+  return list;
+}
+
+/* ---------- state ---------- */
+const KEY="valdia-save-v1";
+let S=null;           // game state
+let sel=null;         // selected province id
+let tab="chron";
+let busy=false, ctl=null, timer=null, startedAt=0, lastError="";
+let sampleFn; // undefined = not resolved yet, null = unavailable
+const IN_CLAUDE = !!window.claude;   // opened inside claude.ai (Gemini is blocked there)
+const AKEY="valdia-ai-v1";
+let AI={provider:IN_CLAUDE?"claude":"gemini", key:"", model:"gemini-2.5-flash"};
+try{ const t=JSON.parse(localStorage.getItem(AKEY)||"null"); if(t) AI=Object.assign(AI,t); }catch(_){}
+if(IN_CLAUDE) AI.provider="claude";
+if(!IN_CLAUDE) AI.provider="gemini";
+let geminiModels=[], showAI=false, aiMsg="";
+function saveAI(){ try{ localStorage.setItem(AKEY,JSON.stringify(AI)); }catch(_){} }
+function aiReady(){ return AI.provider==="claude" ? !!sampleFn : !!AI.key; }
+
+function parseLoose(t){
+  t=String(t||"").trim();
+  try{ return JSON.parse(t); }catch(_){}
+  const f=t.match(/```(?:json)?\s*([\s\S]*?)```/); if(f){ try{ return JSON.parse(f[1]); }catch(_){} }
+  const a=t.indexOf("{"), b=t.lastIndexOf("}"); if(a>=0&&b>a){ try{ return JSON.parse(t.slice(a,b+1)); }catch(_){} }
+  throw {code:"invalid_json"};
+}
+async function askGemini(prompt,signal){
+  let r;
+  try{
+    r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(AI.model)}:generateContent`,{
+      method:"POST",signal,headers:{"Content-Type":"application/json","x-goog-api-key":AI.key},
+      body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",temperature:0.9}})});
+  }catch(e){ if(signal.aborted) throw {code:"cancelled"}; throw {code:"g_network"}; }
+  if(r.status===400||r.status===401||r.status===403) throw {code:"g_key"};
+  if(r.status===404) throw {code:"g_model"};
+  if(r.status===429) throw {code:"rate_limited"};
+  if(!r.ok) throw {code:"upstream_error"};
+  const j=await r.json();
+  const text=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts||[]).map(p=>p.text||"").join("");
+  if(!text) throw {code:"refused"};
+  return parseLoose(text);
+}
+async function loadGeminiModels(){
+  aiMsg="モデルの一覧を読み込んでいます…"; render();
+  try{
+    const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200",{headers:{"x-goog-api-key":AI.key}});
+    if(!r.ok){ aiMsg = r.status===400||r.status===403 ? "APIキーが正しくないようです。もう一度確かめてください。" : "一覧を読み込めませんでした。"; render(); return; }
+    const j=await r.json();
+    geminiModels=(j.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent")).map(m=>m.name.replace(/^models\//,""))
+      .filter(n=>/gemini/.test(n)&&!/embed|tts|image|audio|live|vision/.test(n));
+    if(geminiModels.length && !geminiModels.includes(AI.model)){ AI.model=geminiModels.find(n=>/flash/.test(n)&&!/lite/.test(n))||geminiModels[0]; saveAI(); }
+    aiMsg=`使えるモデルを${geminiModels.length}個見つけました。`;
+  }catch(e){ aiMsg = IN_CLAUDE ? "claude.ai の中ではGeminiに接続できません。保存したファイルで開いてください。" : "Googleに接続できませんでした。"; }
+  render();
+}
+async function askAI(prompt,signal){
+  if(AI.provider==="gemini") return askGemini(prompt,signal);
+  return sampleFn.json(prompt,{signal,cache:false,modelTier:"quick"});
+}
+let pickNation="A";
+let confirmReset=false;
+let changedIds=new Set();
+
+function newGame(code){
+  const provs=buildProvinces();
+  const nations={};
+  Object.keys(NATIONS).forEach(k=>{ if(!NATIONS[k].neutral){const n=NATIONS[k]; nations[k]={army:n.army,gold:n.gold,stability:n.stability};} });
+  return {v:1,player:code,turn:0,year:812,season:"春",provinces:provs.map(p=>({id:p.id,owner:p.owner})),
+    nations, diplomacy:{wars:[["K","N"]],alliances:[["A","S"]]}, log:[], suggestions:defaultSuggestions(code), lastDelta:{}, ended:null};
+}
+const START_SITU={
+  A:{aim:"王家の力を守る",text:"豊かな麦畑を持つが、四方を他国に囲まれて落ち着かない。セリムとは古い同盟がある。"},
+  N:{aim:"カルザを押し返す",text:"カルザ帝国との戦争が続き、冬を前に食料が足りなくなりつつある。"},
+  K:{aim:"大陸の統一",text:"皇帝はノルドヴァルとの戦争を進め、さらに南へ目を向けている。"},
+  V:{aim:"森を守る",text:"森の村々は戦争から距離をおき、よそ者を警戒している。"},
+  S:{aim:"交易でもうける",text:"港はにぎわっているが、自前の兵が少なく、守りを傭兵に頼っている。"},
+  Z:{aim:"隊商の道を広げる",text:"首長たちは隊商の道を広げようとしているが、内輪もめも多い。"},
+};
+const ATT=["友好","中立","警戒","敵対"];
+function startAttitude(P,k){ const d={wars:[["K","N"]],alliances:[["A","S"]]}; if(pairHas(d.alliances,P,k)) return "友好"; if(pairHas(d.wars,P,k)) return "敵対"; return k==="K"?"警戒":"中立"; }
+function ensureSitu(){
+  if(!S) return;
+  if(!S.situ){ S.situ={}; Object.keys(S.nations).forEach(k=>S.situ[k]={aim:START_SITU[k].aim,text:START_SITU[k].text,attitude:k===S.player?"":startAttitude(S.player,k)}); }
+  if(S.worldNote===undefined) S.worldNote="北ではカルザ帝国とノルドヴァル連邦が戦争中。ほかの国々は様子をうかがっている。";
+}
+function defaultSuggestions(code){
+  return {
+    A:["セリムとの同盟を深め、交易で国庫を増やす","国境の砦を固め、兵を3万募る","カルザとノルドヴァルの戦争を仲裁する"],
+    N:["カルザとの戦争に全力で反撃する","アウレアへ使者を送り、食料と兵を交換する","南の平原へ攻め込む準備をする"],
+    K:["ノルドヴァルの南の州を攻め落とす","ザハルと手を組み、セリムを挟み撃ちにする","国内の反乱の芽を摘むため税を下げる"],
+    V:["森の砦を固め、弓兵を育てる","自由都市を味方につける","アウレアの西の州へ奇襲をかける"],
+    S:["傭兵を大量に雇う","カルザに武器を売ってもうける","自由都市を買い取る交渉をする"],
+    Z:["隊商の道を広げ、国庫を増やす","ラクダ騎兵でセリムの港を襲う","カルザと同盟を結ぶ"],
+  }[code];
+}
+let PROV_META = buildProvinces(); // static geometry and names
+const META = Object.fromEntries(PROV_META.map(p=>[p.id,p]));
+
+function load(){ try{ const t=localStorage.getItem(KEY); if(t){ const s=JSON.parse(t); if(s&&s.v===1) return s; } }catch(e){} return null; }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+
+const owner = id => S.provinces.find(p=>p.id===id).owner;
+const owned = code => S.provinces.filter(p=>p.owner===code);
+const alive = code => owned(code).length>0;
+const pairHas = (list,a,b)=>list.some(([x,y])=>(x===a&&y===b)||(x===b&&y===a));
+const dateLabel = s => `大陸暦${s.year}年 ${s.season}`;
+const esc = t => String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- map ---------- */
+/* ---------- fantasy map (canvas) ---------- */
+const MAP = (() => {
+  const Rp=44, Wp=Math.sqrt(3)*Rp, ROWS=MAPROWS.length, COLS=MAPROWS[0].length;
+  const CW=Math.round((COLS+1.4)*Wp), CH=Math.round(((ROWS-1)*1.5+2.6)*Rp);
+  const NP=PROV_META.length;
+  function hash(a,b,s){ let h=(Math.imul(a,374761393)+Math.imul(b,668265263)+Math.imul(s,1442695041))|0; h=Math.imul(h^(h>>>13),1274126177); h^=h>>>16; return (h>>>0)/4294967296; }
+  function vnoise(x,y,s){ const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi, u=xf*xf*(3-2*xf), v=yf*yf*(3-2*yf);
+    const a=hash(xi,yi,s), b=hash(xi+1,yi,s), c=hash(xi,yi+1,s), d=hash(xi+1,yi+1,s);
+    return (a+(b-a)*u+(c-a)*v+(a-b-c+d)*u*v)*2-1; }
+  function fbm(x,y,s){ let t=0,amp=1,f=1,n=0; for(let o=0;o<4;o++){ t+=amp*vnoise(x*f,y*f,s+o*17); n+=amp; amp*=.5; f*=2.03; } return t/n; }
+  function rng(seed){ let a=seed>>>0; return ()=>{ a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+  const idxAt={}; PROV_META.forEach((p,i)=>idxAt[p.r+","+p.c]=i);
+  const cells=new Map();
+  function cell(r,c){ const k=(r+10)*100+(c+10); let v=cells.get(k); if(v) return v;
+    const i=(r>=0&&r<ROWS&&c>=0&&c<COLS&&idxAt[r+","+c]!==undefined)?idxAt[r+","+c]:-1;
+    v={x:(c+.5*(r&1)+.95)*Wp+(hash(r,c,7)-.5)*.6*Rp, y:(r*1.5+1.3)*Rp+(hash(r,c,9)-.5)*.6*Rp, i}; cells.set(k,v); return v; }
+  const TERR=PROV_META.map(p=>p.terrain.split("・")[0]);
+  const TC={"平原":[226,210,163],"雪原":[236,238,234],"山地":[210,190,150],"森":[196,200,148],"砂漠":[236,211,150],"都市":[220,204,170]};
+  const INK="#3b2f24";
+  let B=null;      // static base
+  const comp=new Map();
+
+  function distField(look, wantSea){
+    const N=CW*CH, d=new Float32Array(N), INF=1e9;
+    for(let k=0;k<N;k++) d[k]=((look[k]<0)===wantSea)?INF:0;
+    const D=1.4142;
+    for(let y=0;y<CH;y++) for(let x=0;x<CW;x++){ const k=y*CW+x; let v=d[k]; if(!v) continue;
+      if(x>0) v=Math.min(v,d[k-1]+1); if(y>0){ v=Math.min(v,d[k-CW]+1); if(x>0) v=Math.min(v,d[k-CW-1]+D); if(x<CW-1) v=Math.min(v,d[k-CW+1]+D); } d[k]=v; }
+    for(let y=CH-1;y>=0;y--) for(let x=CW-1;x>=0;x--){ const k=y*CW+x; let v=d[k]; if(!v) continue;
+      if(x<CW-1) v=Math.min(v,d[k+1]+1); if(y<CH-1){ v=Math.min(v,d[k+CW]+1); if(x<CW-1) v=Math.min(v,d[k+CW+1]+D); if(x>0) v=Math.min(v,d[k+CW-1]+D); } d[k]=v; }
+    return d;
+  }
+
+  function build(){
+    const N=CW*CH, look=new Int16Array(N), f=1/95, A=.62*Rp, A2=.16*Rp;
+    for(let y=0;y<CH;y++) for(let x=0;x<CW;x++){
+      const wx=x+A*fbm(x*f,y*f,1)+A2*vnoise(x/13,y/13,5), wy=y+A*fbm(x*f+40,y*f+40,2)+A2*vnoise(x/13+9,y/13+9,6);
+      const r0=Math.round((wy/Rp-1.3)/1.5); let best=1e18, bi=-1;
+      for(let r=r0-1;r<=r0+1;r++){ const c0=Math.round(wx/Wp-.95-.5*(r&1));
+        for(let c=c0-1;c<=c0+1;c++){ const q=cell(r,c), dx=q.x-wx, dy=q.y-wy, dd=dx*dx+dy*dy; if(dd<best){best=dd;bi=q.i;} } }
+      look[y*CW+x]=bi;
+    }
+    // edge rows/cols are always sea so the map has a frame of water
+    for(let x=0;x<CW;x++){ look[x]=-1; look[(CH-1)*CW+x]=-1; } for(let y=0;y<CH;y++){ look[y*CW]=-1; look[y*CW+CW-1]=-1; }
+    const seaD=distField(look,true), landD=distField(look,false);
+    // centroids
+    const sx=new Float64Array(NP), sy=new Float64Array(NP), cnt=new Float64Array(NP);
+    for(let y=0;y<CH;y++) for(let x=0;x<CW;x++){ const i=look[y*CW+x]; if(i>=0){ sx[i]+=x; sy[i]+=y; cnt[i]++; } }
+    const cen=PROV_META.map((p,i)=>cnt[i]?[sx[i]/cnt[i],sy[i]/cnt[i]]:[cell(p.r,p.c).x,cell(p.r,p.c).y]);
+    // base pixels
+    const cv=document.createElement("canvas"); cv.width=CW; cv.height=CH; const ctx=cv.getContext("2d");
+    const img=ctx.createImageData(CW,CH), px=img.data;
+    for(let y=0;y<CH;y++) for(let x=0;x<CW;x++){
+      const k=y*CW+x, o=k*4, i=look[k]; let r,g,b;
+      const grain=(hash(x,y,3)-.5)*10, mott=vnoise(x/38,y/38,11)*9+vnoise(x/9,y/9,12)*3;
+      if(i<0){
+        const d=seaD[k], t=Math.min(d/70,1);
+        r=150-58*t; g=186-56*t; b=184-42*t;
+        const band=d%13; if(d<52 && band>8.6 && band<9.9){ r-=26; g-=22; b-=16; }
+        if(d<2.2){ r-=40; g-=36; b-=30; }
+        r+=mott*.6+grain*.5; g+=mott*.6+grain*.5; b+=mott*.6+grain*.5;
+      } else {
+        const c=TC[TERR[i]]; r=c[0]; g=c[1]; b=c[2];
+        r+=mott+grain; g+=mott+grain; b+=mott*.8+grain;
+        const ld=landD[k];
+        if(ld<1.6){ r=72; g=58; b=44; } else if(ld<7){ const s=(7-ld)/7*22; r-=s; g-=s; b-=s*.8; }
+        // dotted province borders
+        const rr=x<CW-1?look[k+1]:i, dn=y<CH-1?look[k+CW]:i;
+        if(((rr>=0&&rr!==i)||(dn>=0&&dn!==i)) && ((x+y)>>1)%2===0){ r-=60; g-=60; b-=55; }
+      }
+      px[o]=r; px[o+1]=g; px[o+2]=b; px[o+3]=255;
+    }
+    ctx.putImageData(img,0,0);
+    // terrain icons
+    const icons=[];
+    const avoid=PROV_META.map((p,i)=>(p.capital||p.origin==="I")?cen[i]:null).filter(Boolean);
+    const okAt=(x,y,i)=>{ x|=0; y|=0; if(x<8||y<8||x>CW-9||y>CH-9) return false; const k=y*CW+x;
+      return look[k]===i && landD[k]>9 && look[k-8]===i && look[k+8]===i && look[k-7*CW]===i && look[k+6*CW]===i; };
+    const WANT={"平原":4,"雪原":6,"山地":7,"森":11,"砂漠":5,"都市":3};
+    PROV_META.forEach((p,i)=>{
+      const R=rng(1000+i), want=WANT[TERR[i]]; let got=0;
+      for(let t=0;t<90&&got<want;t++){
+        const x=cen[i][0]+(R()-.5)*2.4*Rp, y=cen[i][1]+(R()-.5)*2.1*Rp;
+        if(!okAt(x,y,i)) continue;
+        if(avoid.some(([ax,ay])=>Math.hypot(ax-x,ay-y)<26)) continue;
+        if(icons.some(q=>Math.hypot(q.x-x,q.y-y)<(TERR[i]==="森"?11:15))) continue;
+        icons.push({x,y,t:TERR[i],s:.85+R()*.35}); got++;
+      }
+    });
+    icons.sort((a,b)=>a.y-b.y);
+    ctx.lineJoin="round"; ctx.lineCap="round";
+    icons.forEach(ic=>drawIcon(ctx,ic));
+    // castles and towns
+    PROV_META.forEach((p,i)=>{ if(p.capital) castle(ctx,cen[i][0],cen[i][1]); else if(p.origin==="I") town(ctx,cen[i][0],cen[i][1]); });
+    B={look,cen,base:cv,cnt};
+  }
+
+  function drawIcon(c,{x,y,t,s}){
+    c.strokeStyle=INK; c.lineWidth=1.3;
+    if(t==="山地"||t==="雪原"){
+      const w=9*s, h=12*s;
+      c.beginPath(); c.moveTo(x-w,y); c.lineTo(x-w*.15,y-h); c.lineTo(x+w,y); c.closePath();
+      c.fillStyle=t==="雪原"?"#d9dcd6":"#cdb58a"; c.fill();
+      c.beginPath(); c.moveTo(x-w*.15,y-h); c.lineTo(x+w,y); c.lineTo(x+w*.1,y); c.closePath(); c.fillStyle=t==="雪原"?"#aab4b8":"#a88d63"; c.fill();
+      if(t==="雪原"){ c.beginPath(); c.moveTo(x-w*.15,y-h); c.lineTo(x-w*.45,y-h*.62); c.lineTo(x-w*.1,y-h*.7); c.lineTo(x+w*.2,y-h*.6); c.closePath(); c.fillStyle="#fbfbf8"; c.fill(); }
+      c.beginPath(); c.moveTo(x-w,y); c.lineTo(x-w*.15,y-h); c.lineTo(x+w,y); c.stroke();
+    } else if(t==="森"){
+      const r=4.6*s;
+      c.beginPath(); c.moveTo(x,y+1); c.lineTo(x,y-r); c.stroke();
+      c.beginPath(); c.moveTo(x,y-r*2.9); c.lineTo(x-r*1.15,y-r*.6); c.lineTo(x+r*1.15,y-r*.6); c.closePath();
+      c.fillStyle="#6f8a4c"; c.fill(); c.stroke();
+    } else if(t==="砂漠"){
+      const w=10*s;
+      c.beginPath(); c.moveTo(x-w,y); c.quadraticCurveTo(x-w*.2,y-7*s,x+w*.5,y-1); c.stroke();
+      c.beginPath(); c.moveTo(x-w*.1,y+4); c.quadraticCurveTo(x+w*.5,y-2*s,x+w,y+3); c.stroke();
+    } else if(t==="平原"){
+      c.lineWidth=1.1;
+      for(let j=-1;j<=1;j++){ c.beginPath(); c.moveTo(x+j*4,y); c.lineTo(x+j*4+1.5,y-5*s); c.stroke(); }
+    } else {
+      c.lineWidth=1.1; c.beginPath(); c.arc(x,y,1.6,0,7); c.fillStyle=INK; c.fill();
+    }
+  }
+  function castle(c,x,y){
+    c.save(); c.translate(x,y-4); c.strokeStyle=INK; c.lineWidth=1.4; c.fillStyle="#efe3c4";
+    c.beginPath(); c.rect(-10,-6,20,12); c.fill(); c.stroke();
+    [-10,-2,6].forEach(tx=>{ c.beginPath(); c.rect(tx,-13,4,7); c.fill(); c.stroke(); });
+    c.beginPath(); c.rect(-3,-1,6,7); c.fillStyle=INK; c.fill();
+    c.beginPath(); c.moveTo(0,-13); c.lineTo(0,-21); c.stroke();
+    c.beginPath(); c.moveTo(0,-21); c.lineTo(7,-18.5); c.lineTo(0,-16); c.fillStyle="#9c3b2c"; c.fill();
+    c.restore();
+  }
+  function town(c,x,y){
+    c.save(); c.translate(x,y-3); c.strokeStyle=INK; c.lineWidth=1.3; c.fillStyle="#efe3c4";
+    [[-7,0],[2,-3]].forEach(([tx,ty])=>{ c.beginPath(); c.moveTo(tx,ty); c.lineTo(tx,ty-6); c.lineTo(tx+3.5,ty-10); c.lineTo(tx+7,ty-6); c.lineTo(tx+7,ty); c.closePath(); c.fill(); c.stroke(); });
+    c.restore();
+  }
+
+  function rgbOf(code){ const v=getComputedStyle(document.documentElement).getPropertyValue("--n-"+code).trim()||"#888888";
+    const n=parseInt(v.slice(1),16); return [(n>>16)&255,(n>>8)&255,n&255]; }
+
+  function spaced(c,text,x,y,size,track){
+    const chars=[...text], ws=chars.map(ch=>c.measureText(ch).width), tot=ws.reduce((a,b)=>a+b,0)+track*size*(chars.length-1);
+    let cx=x-tot/2; chars.forEach((ch,j)=>{ c.strokeText(ch,cx+ws[j]/2,y); c.fillText(ch,cx+ws[j]/2,y); cx+=ws[j]+track*size; });
+  }
+
+  function compose(owners, selId, changed){
+    if(!B) build();
+    const key=JSON.stringify(owners)+"|"+selId+"|"+[...changed].join(",")+"|"+fontsReady;
+    if(comp.has(key)) return comp.get(key);
+    const {look,cen,cnt}=B, codes=Object.keys(NATIONS), col={};
+    codes.forEach(k=>col[k]=rgbOf(k));
+    const own=PROV_META.map(p=>owners[p.id]);
+    const selI=selId?PROV_META.findIndex(p=>p.id===selId):-1;
+    const chg=new Uint8Array(NP); PROV_META.forEach((p,i)=>{ if(changed.has(p.id)) chg[i]=1; });
+    const fillC=document.createElement("canvas"); fillC.width=CW; fillC.height=CH;
+    const lineC=document.createElement("canvas"); lineC.width=CW; lineC.height=CH;
+    const fi=fillC.getContext("2d").createImageData(CW,CH), li=lineC.getContext("2d").createImageData(CW,CH);
+    const F=fi.data, L=li.data;
+    for(let y=2;y<CH-2;y++) for(let x=2;x<CW-2;x++){
+      const k=y*CW+x, i=look[k]; if(i<0) continue; const o=k*4, ow=own[i], c=col[ow];
+      F[o]=c[0]; F[o+1]=c[1]; F[o+2]=c[2]; F[o+3]=ow==="I"?60:120;
+      let nb=false, nb2=false, pe=false, pe2=false;
+      const n1=[k-1,k+1,k-CW,k+CW], n2=[k-2,k+2,k-2*CW,k+2*CW];
+      for(const q of n1){ const j=look[q]; if(j>=0&&own[j]!==ow) nb=true; if(j!==i) pe=true; }
+      for(const q of n2){ const j=look[q]; if(j>=0&&own[j]!==ow) nb2=true; if(j!==i) pe2=true; }
+      if((i===selI||chg[i]) && (pe||pe2)){ L[o]=255; L[o+1]=252; L[o+2]=240; L[o+3]=i===selI?255:230; continue; }
+      if(nb){ L[o]=c[0]*.45; L[o+1]=c[1]*.45; L[o+2]=c[2]*.45; L[o+3]=235; }
+      else if(nb2){ L[o]=c[0]*.8; L[o+1]=c[1]*.8; L[o+2]=c[2]*.8; L[o+3]=200; }
+    }
+    fillC.getContext("2d").putImageData(fi,0,0); lineC.getContext("2d").putImageData(li,0,0);
+    const out=document.createElement("canvas"); out.width=CW; out.height=CH; const c=out.getContext("2d");
+    c.drawImage(B.base,0,0);
+    c.globalCompositeOperation="multiply"; c.drawImage(fillC,0,0);
+    c.globalCompositeOperation="source-over"; c.drawImage(lineC,0,0);
+    const DF=getComputedStyle(document.documentElement).getPropertyValue("--display").trim()||"serif";
+    c.textAlign="center"; c.textBaseline="middle"; c.lineJoin="round";
+    // capital and city names
+    c.font=`700 17px ${DF}`; c.lineWidth=4; c.strokeStyle="rgba(240,230,205,.92)"; c.fillStyle=INK;
+    PROV_META.forEach((p,i)=>{ if(p.capital||p.origin==="I"){ const nm=p.name.replace("自由都市",""); c.strokeText(nm,cen[i][0],cen[i][1]+17); c.fillText(nm,cen[i][0],cen[i][1]+17); } });
+    // nation names at the middle of their current land
+    codes.forEach(k=>{ if(NATIONS[k].neutral) return; let ax=0,ay=0,n=0;
+      PROV_META.forEach((p,i)=>{ if(own[i]===k){ ax+=cen[i][0]*cnt[i]; ay+=cen[i][1]*cnt[i]; n+=cnt[i]; } });
+      if(!n) return; ax/=n; ay/=n;
+      const near=PROV_META.some((p,i)=>(p.capital||p.origin==="I")&&Math.hypot(cen[i][0]-ax,cen[i][1]-ay)<34);
+      if(near) ay-=36;
+      const size=Math.max(24,Math.min(40,Math.sqrt(n)/7));
+      c.font=`900 ${size}px ${DF}`; c.lineWidth=5; c.strokeStyle="rgba(244,236,214,.85)";
+      const cc=col[k]; c.fillStyle=`rgb(${cc[0]*.42|0},${cc[1]*.42|0},${cc[2]*.42|0})`;
+      spaced(c,NATIONS[k].short,ax,ay,size,.35);
+    });
+    // seas
+    c.font=`700 18px ${DF}`; c.fillStyle="rgba(28,52,62,.62)"; c.strokeStyle="rgba(0,0,0,0)"; c.lineWidth=0;
+    spaced(c,"北の凍海",CW*.78,CH*.065,18,.6);
+    spaced(c,"南の陽光海",CW*.18,CH*.93,18,.6);
+    spaced(c,"霧の海",CW*.08,CH*.06,16,.5);
+    c.save(); c.translate(CW-24,CH*.5); [..."東の果て海"].forEach((ch,j)=>c.fillText(ch,0,(j-2)*22)); c.restore();
+    // compass rose
+    compass(c,CW-70,CH-62,26,DF);
+    // frame
+    c.strokeStyle=INK; c.lineWidth=3; c.strokeRect(5,5,CW-10,CH-10); c.lineWidth=1; c.strokeRect(10,10,CW-20,CH-20);
+    if(comp.size>12) comp.clear();
+    comp.set(key,out); return out;
+  }
+  function compass(c,x,y,r,DF){
+    c.save(); c.translate(x,y); c.strokeStyle=INK; c.lineWidth=1.1;
+    c.beginPath(); c.arc(0,0,r*.72,0,7); c.stroke();
+    for(let j=0;j<8;j++){ const a=j*Math.PI/4, L=j%2?r*.55:r, w=j%2?3:5;
+      c.save(); c.rotate(a);
+      c.beginPath(); c.moveTo(0,-L); c.lineTo(w,0); c.lineTo(0,0); c.closePath(); c.fillStyle=INK; c.fill();
+      c.beginPath(); c.moveTo(0,-L); c.lineTo(-w,0); c.lineTo(0,0); c.closePath(); c.fillStyle="#efe3c4"; c.fill(); c.stroke();
+      c.restore(); }
+    c.font=`700 14px ${DF}`; c.fillStyle=INK; c.textAlign="center"; c.textBaseline="middle"; c.fillText("北",0,-r-11);
+    c.restore();
+  }
+
+  function hit(canvas,e){
+    if(!B) return null; const rc=canvas.getBoundingClientRect();
+    const x=Math.round((e.clientX-rc.left)*CW/rc.width), y=Math.round((e.clientY-rc.top)*CH/rc.height);
+    if(x<0||y<0||x>=CW||y>=CH) return null;
+    const i=B.look[y*CW+x]; return i>=0?PROV_META[i].id:null;
+  }
+  return {CW,CH,compose,hit};
+})();
+let fontsReady=false;
+function mapCanvas(id){ return `<canvas id="${id}" class="mapc" width="${MAP.CW}" height="${MAP.CH}" role="img" aria-label="ヴァルディア大陸の地図"></canvas>`; }
+function paintMaps(){
+  const m=document.getElementById("map"), mi=document.getElementById("mini");
+  if(m&&S) m.getContext("2d").drawImage(MAP.compose(ownersMap(),sel,changedIds),0,0);
+  if(mi) mi.getContext("2d").drawImage(MAP.compose(initialOwners(),null,new Set()),0,0);
+}
+if(document.fonts&&document.fonts.load){ document.fonts.load('900 20px "Zen Old Mincho"').then(()=>{ fontsReady=true; render(); }).catch(()=>{}); }
+
+function ownersMap(){ return Object.fromEntries(S.provinces.map(p=>[p.id,p.owner])); }
+function initialOwners(){ return Object.fromEntries(PROV_META.map(p=>[p.id,p.origin])); }
+
+/* ---------- AI ---------- */
+function worldText(){
+  const lines=[];
+  Object.keys(S.nations).forEach(k=>{
+    const n=S.nations[k], c=owned(k).length;
+    lines.push(`${k}=${NATIONS[k].name}: ${c?`州${c} 兵${n.army}00人 国庫${n.gold}金 安定度${n.stability}`:"滅亡"} — ${NATIONS[k].desc}`);
+  });
+  lines.push(`I=自由都市（中立の町、国ではない）`);
+  const pl=S.provinces.map(p=>{const m=META[p.id]; return `${p.id} ${m.name}[${p.owner}]${m.terrain}${m.capital&&p.owner===m.origin?"・首都":""} 隣:${m.nb.join(",")}`;});
+  return {nations:lines.join("\n"), provinces:pl.join("\n")};
+}
+function buildPrompt(cmd){
+  const w=worldText(), P=S.player;
+  const recent=S.log.slice(-4).map(e=>`【${e.when}】${e.headline}：${e.story}`).join("\n");
+  return `あなたは架空の大陸「ヴァルディア」の歴史を書く年代記作家で、戦略ゲームの審判です。プレイヤーは ${P}=${NATIONS[P].name} の君主です。
+1ターンは半年。今は ${dateLabel(S)}。プレイヤーの命令を受けて、この半年に大陸で起きたことを決めて書いてください。
+
+# ルール
+- もっともらしく公平に。無茶な命令は失敗したり、代償を払ったりしてよい。うまい作戦は報われる。
+- 兵・国庫・安定度・地形・距離・同盟関係を考えて結果を決める。
+- 他の国（AI）も自分の目的で動く：同盟、裏切り、戦争、内乱、疫病、豊作など。毎ターン1〜3件、他国の動きを入れる。
+- 州の持ち主が変わるのは、戦争・反乱・買収・自由都市の合流などのときだけ。新しい持ち主がすでに隣の州を持っていること。1ターンで全体で最大5州まで。首都は落ちにくい。
+- 数値の変化（差分）の目安：兵は ±0〜60（単位は百人）、国庫は ±0〜400、安定度は ±0〜15。毎ターン、州の数に応じて少し国庫が入り、兵の維持でお金が減る。
+- 現実の国名・人名・宗教は出さない。人物の名前は架空のカタカナ名で。
+- 文章は日本語。むずかしい漢字や専門用語は避け、物語として楽しく。
+
+# 国（コード=名前）
+${w.nations}
+
+# 各国の情勢（前のターンまで）
+${Object.keys(S.nations).filter(k=>alive(k)).map(k=>`${k}: ねらい「${S.situ[k].aim}」 ${S.situ[k].text}${k!==P?` プレイヤーへの態度:${S.situ[k].attitude}`:""}`).join("\n")}
+大陸全体：${S.worldNote}
+
+# 外交
+戦争中: ${S.diplomacy.wars.map(p=>p.join("×")).join("、")||"なし"}
+同盟: ${S.diplomacy.alliances.map(p=>p.join("＝")).join("、")||"なし"}
+
+# 州（id 名前[持ち主]地形 隣の州）
+${w.provinces}
+
+# これまでの出来事
+${recent||"（まだない。物語の始まり）"}
+
+# プレイヤーの命令
+${cmd}
+
+# 返答の形
+JSONだけを返す。説明文は付けない。
+{
+ "headline": "この半年を表す見出し（20字以内）",
+ "story": "プレイヤーの命令の結果を中心にした物語（150〜300字）",
+ "events": [{"nation":"国コード","text":"他国の動き（60字以内）"}],
+ "transfers": [{"province":"p番号","to":"国コードまたはI"}],
+ "stats": {"国コード":{"army":差分,"gold":差分,"stability":差分}},
+ "wars": [["国コード","国コード"]],
+ "alliances": [["国コード","国コード"]],
+ "situations": {"国コード":{"aim":"その国の今のねらい（15字以内）","text":"その国の今のようす（60字以内）","attitude":"プレイヤーへの態度。友好・中立・警戒・敵対のどれか"}},
+ "world": "大陸全体の情勢のまとめ（80字以内）",
+ "advisor": "家臣からプレイヤーへの次の一手の助言（60字以内）",
+ "suggestions": ["次の命令の候補（25字以内）","…","…"]
+}
+wars と alliances は、このターンが終わった時点の全部の一覧（変わらないものも含める）。stats は変化があった国だけ。situations は滅亡していない全部の国（プレイヤーの国も）について書く。`;
+}
+
+function applyTurn(cmd,res){
+  const valid=new Set(Object.keys(NATIONS));
+  const nat=new Set(Object.keys(S.nations));
+  changedIds=new Set();
+  const transfers=[];
+  (Array.isArray(res.transfers)?res.transfers:[]).slice(0,6).forEach(t=>{
+    const p=S.provinces.find(x=>x.id===String(t&&t.province)); const to=String(t&&t.to);
+    if(!p||!valid.has(to)||p.owner===to) return;
+    const ok=to==="I"||META[p.id].nb.some(n=>owner(n)===to);
+    if(!ok) return;
+    transfers.push({id:p.id,from:p.owner,to}); p.owner=to; changedIds.add(p.id);
+  });
+  const delta={};
+  const st=res.stats&&typeof res.stats==="object"?res.stats:{};
+  Object.keys(st).forEach(k=>{
+    if(!nat.has(k)) return; const d=st[k]||{}; const n=S.nations[k];
+    const num=v=>{v=Number(v);return Number.isFinite(v)?Math.round(v):0;};
+    const da=num(d.army), dg=num(d.gold), ds=num(d.stability);
+    n.army=Math.max(0,Math.min(3000,n.army+da)); n.gold=Math.max(0,Math.min(99999,n.gold+dg)); n.stability=Math.max(0,Math.min(100,n.stability+ds));
+    delta[k]={army:da,gold:dg,stability:ds};
+  });
+  const pairs=v=>(Array.isArray(v)?v:[]).filter(x=>Array.isArray(x)&&x.length===2&&nat.has(x[0])&&nat.has(x[1])&&x[0]!==x[1]&&alive(x[0])&&alive(x[1]))
+    .filter((x,i,a)=>a.findIndex(y=>(y[0]===x[0]&&y[1]===x[1])||(y[0]===x[1]&&y[1]===x[0]))===i);
+  if(Array.isArray(res.wars)) S.diplomacy.wars=pairs(res.wars);
+  if(Array.isArray(res.alliances)) S.diplomacy.alliances=pairs(res.alliances).filter(x=>!pairHas(S.diplomacy.wars,x[0],x[1]));
+  // remove dead nations from diplomacy
+  S.diplomacy.wars=S.diplomacy.wars.filter(([a,b])=>alive(a)&&alive(b));
+  S.diplomacy.alliances=S.diplomacy.alliances.filter(([a,b])=>alive(a)&&alive(b));
+  const events=(Array.isArray(res.events)?res.events:[]).slice(0,4).map(e=>({nation:valid.has(String(e&&e.nation))?String(e.nation):"",text:String(e&&e.text||"").slice(0,160)})).filter(e=>e.text);
+  S.log.push({when:dateLabel(S),cmd,headline:String(res.headline||"この半年").slice(0,40),story:String(res.story||"").slice(0,900),events,transfers,advisor:String(res.advisor||"").slice(0,160)});
+  if(Array.isArray(res.suggestions)){ const sg=res.suggestions.map(x=>String(x).slice(0,40)).filter(Boolean).slice(0,3); if(sg.length) S.suggestions=sg; }
+  S.lastDelta=delta;
+  const sit=res.situations&&typeof res.situations==="object"?res.situations:{};
+  Object.keys(sit).forEach(k=>{ if(!nat.has(k)||!sit[k]) return; const o=sit[k], cur=S.situ[k];
+    if(o.aim) cur.aim=String(o.aim).slice(0,30); if(o.text) cur.text=String(o.text).slice(0,200);
+    if(k!==S.player && ATT.includes(String(o.attitude))) cur.attitude=String(o.attitude); });
+  Object.keys(S.nations).forEach(k=>{ if(k===S.player) return; if(pairHas(S.diplomacy.wars,S.player,k)) S.situ[k].attitude="敵対"; });
+  if(res.world) S.worldNote=String(res.world).slice(0,240);
+  S.turn++; if(S.season==="春") S.season="秋"; else {S.season="春"; S.year++;}
+  const mine=owned(S.player).length;
+  if(mine===0) S.ended="lose"; else if(mine>=Math.ceil(PROV_META.length*0.75)) S.ended="win";
+  save();
+}
+
+async function sendOrder(){
+  const box=document.getElementById("cmd"); const cmd=(box.value||"").trim();
+  if(!cmd||busy||!aiReady()) return;
+  busy=true; lastError=""; ctl=new AbortController(); startedAt=Date.now();
+  render();
+  timer=setInterval(()=>{const el=document.getElementById("status"); if(el) el.textContent=`年代記を書いています… ${Math.round((Date.now()-startedAt)/1000)}秒`;},1000);
+  try{
+    const res=await askAI(buildPrompt(cmd),ctl.signal);
+    if(!res||typeof res!=="object") throw {code:"invalid_json"};
+    applyTurn(cmd,res);
+    try{ localStorage.removeItem(KEY+"-draft"); }catch(e){}
+    tab="chron";
+    busy=false; clearInterval(timer); draft=""; render();
+    const c=document.getElementById("cmd"); if(c) c.value="";
+    const top=document.querySelector(".chron .entry"); if(top&&window.innerWidth<860) top.scrollIntoView({behavior:"smooth",block:"start"});
+    return;
+  }catch(e){
+    const code=e&&e.code;
+    lastError = code==="cancelled"?"" :
+      code==="not_granted"||code==="sampling_disabled"?"AIの利用が許可されていないため、歴史を進められません。":
+      code==="rate_limited"?"AIの利用回数の上限に達しました。少し時間をおいてから、もう一度送ってください。":
+      code==="invalid_json"?"AIの返事をうまく読めませんでした。同じ命令をもう一度送ってください。":
+      code==="refused"?"この命令ではAIが続きを書けませんでした。命令を書きかえてください。":
+      code==="g_key"?"GeminiのAPIキーが正しくないようです。「AIの設定」で確かめてください。":
+      code==="g_model"?"選んだGeminiのモデルが見つかりません。「AIの設定」で別のモデルを選んでください。":
+      code==="g_network"?"Geminiに接続できませんでした。電波を確かめて、もう一度送ってください。":
+      "通信がうまくいきませんでした。もう一度送ってください。";
+  }
+  busy=false; clearInterval(timer); render();
+}
+
+/* ---------- render ---------- */
+const app=document.getElementById("app");
+function signed(v){ return v>0?`<span class="d up">+${v}</span>`:v<0?`<span class="d down">${v}</span>`:""; }
+
+function aiPanelHTML(){
+  const ready=aiReady();
+  return `<details class="aiset" ${showAI||(!ready&&AI.provider==="gemini")?"open":""}>
+      <summary>AIの設定（今：${AI.provider==="gemini"?"Gemini "+esc(AI.model):"Claude 軽量モデル"}）</summary>
+      <div class="aibody">
+        ${IN_CLAUDE?`<p>このページ（claude.ai の中）では、Claudeの軽量モデルで動きます。Geminiで遊ぶときは、保存したファイル版を開いてください。</p>`:`
+        <label for="gkey">Gemini APIキー（このスマホの中にだけ保存されます）</label>
+        <div class="row"><input id="gkey" type="password" autocomplete="off" value="${esc(AI.key)}" placeholder="AIza…"><button class="btn ghost" id="gsave">保存して確かめる</button></div>
+        <label for="gmodel">モデル</label>
+        ${geminiModels.length?`<select id="gmodel">${geminiModels.map(m=>`<option ${m===AI.model?"selected":""}>${esc(m)}</option>`).join("")}</select>`:`<input id="gmodel" value="${esc(AI.model)}">`}
+        <p class="status">${esc(aiMsg)||"キーは Google AI Studio で無料で作れます。"}</p>`}
+      </div></details>`;
+}
+function renderStart(){
+  const n=NATIONS[pickNation];
+  app.innerHTML=`<div class="start">
+    <div class="lead"><h1>ヴァルディア年代記</h1>
+    <p>六つの国がひしめく架空の大陸ヴァルディア。ひとつの国の君主になり、言葉で命令を出してください。半年ごとに、AIの年代記作家があなたの命令と他の国の動きを歴史として書いていきます。大陸の4分の3を治めれば統一、すべての州を失えば滅亡です。</p></div>
+    <div class="minimap mapwrap">${mapCanvas("mini")}</div>
+    <div class="pick">${PLAYABLE.map(k=>{const x=NATIONS[k];const c=PROV_META.filter(p=>p.origin===k).length;return `<button class="ncard" data-pick="${k}" aria-pressed="${k===pickNation}">
+      <span class="t"><span class="sw" style="background:var(--n-${k})"></span>${x.name}</span>
+      <span class="s">${x.desc}</span>
+      <span class="v">州 ${c}　兵 ${x.army}00人　国庫 ${x.gold}金　安定度 ${x.stability}</span></button>`;}).join("")}</div>
+    ${IN_CLAUDE?"":`<div class="orders">${aiPanelHTML()}</div>`}
+    <div class="row"><button class="btn" id="begin">${n.name}で始める</button></div>
+  </div>`;
+}
+
+function renderGame(){
+  const P=S.player, me=S.nations[P], d=S.lastDelta[P]||{};
+  const selP=sel&&S.provinces.find(p=>p.id===sel);
+  let info=`<span class="sub">地図の州をタップすると、名前と持ち主がわかります。★は首都です。</span>`;
+  if(selP){ const m=META[sel]; const o=selP.owner;
+    info=`<div class="nm"><span class="sw" style="background:var(--n-${o})"></span> ${esc(m.name)}${m.capital&&o===m.origin?" ★首都":""}</div>
+    <div class="sub">${NATIONS[o].name}の州・${m.terrain}・となり：${m.nb.map(n=>esc(META[n].name)).join("、")}</div>`; }
+  const ready=aiReady();
+  const notReadyMsg = AI.provider==="gemini" ? "「AIの設定」でGeminiのAPIキーを入れると遊べます。" : sampleFn===undefined ? "AIの準備をしています…" : "この画面ではClaudeが使えません。";
+  const placeholder = "例：ザハルに使者を送り、隊商の道を共同で守る約束をする";
+
+  const ended = S.ended ? `<div class="over"><h2>${S.ended==="win"?"大陸統一":"滅亡"}</h2><p>${S.ended==="win"?`${NATIONS[P].name}は大陸の大半を治め、${dateLabel(S)}、新しい時代が始まった。`:`${NATIONS[P].name}は最後の州を失い、歴史の表舞台から消えた。`}</p><button class="btn" id="again">別の国で遊ぶ</button></div>` : "";
+  const orders = S.ended ? "" : `<section class="orders" aria-labelledby="oh">
+      <h2 id="oh">君主の命令</h2>
+      <label for="cmd">この半年、何をしますか。自由に書いてください。</label>
+      <textarea id="cmd" placeholder="${placeholder}" ${busy?"disabled":""}></textarea>
+      <div class="chips">${S.suggestions.map(s=>`<button class="chip" data-sug="${esc(s)}" ${busy?"disabled":""}>${esc(s)}</button>`).join("")}</div>
+      <div class="row">
+        <button class="btn" id="send" ${busy||!ready?"disabled":""}>命令を出す</button>
+        ${busy?`<button class="btn ghost" id="stop">中止</button>`:""}
+        <span class="status ${lastError?"err":""}" id="status">${busy?"年代記を書いています… 0秒":esc(lastError)||(ready?"":notReadyMsg)}</span>
+      </div>
+      ${aiPanelHTML()}
+    </section>`;
+
+  const chron = S.log.length ? S.log.slice().reverse().map(e=>`<article class="entry">
+      <div class="when">${esc(e.when)}</div><h3>${esc(e.headline)}</h3>
+      <div class="cmd">命令：${esc(e.cmd)}</div>
+      <p>${esc(e.story)}</p>
+      ${(e.events.length||e.transfers.length)?`<ul>${e.events.map(v=>`<li>${v.nation?`<b>${esc(NATIONS[v.nation].short)}</b>：`:""}${esc(v.text)}</li>`).join("")}${e.transfers.map(t=>`<li>${esc(META[t.id].name)}が${esc(NATIONS[t.from].short)}から${esc(NATIONS[t.to].short)}の手に渡った。</li>`).join("")}</ul>`:""}
+      ${e.advisor?`<div class="advisor"><b>家臣の助言</b>　${esc(e.advisor)}</div>`:""}
+    </article>`).join("") : `<p class="empty">まだ何も起きていません。最初の命令を出すと、ここに歴史が書かれていきます。</p>`;
+
+  const nat = `<div class="worldnote"><b>大陸の情勢</b><p>${esc(S.worldNote)}</p></div>` + Object.keys(S.nations).map(k=>{const n=S.nations[k],c=owned(k).length,dd=S.lastDelta[k]||{};
+    let tag=""; if(!c) tag=`<span class="tag dead">滅亡</span>`; else if(k===P) tag=`<span class="tag">あなた</span>`; else if(pairHas(S.diplomacy.wars,P,k)) tag=`<span class="tag war">戦争中</span>`; else if(pairHas(S.diplomacy.alliances,P,k)) tag=`<span class="tag ally">同盟</span>`;
+    const si=S.situ[k], att=k!==P&&c?`<span class="att a-${si.attitude}">あなたに${si.attitude}</span>`:"";
+    return `<div class="nrow"><span class="sw" style="background:var(--n-${k})"></span><span class="nn">${NATIONS[k].name}</span>${tag}
+      ${c?`<div class="sit"><div class="aim">ねらい：${esc(si.aim)} ${att}</div><p>${esc(si.text)}</p></div>`:""}
+      <span class="nv">${c?`州 ${c}　兵 ${n.army}00人${signed(dd.army||0)}　国庫 ${n.gold}${signed(dd.gold||0)}　安定度 ${n.stability}${signed(dd.stability||0)}`:"領土なし"}</span></div>`;}).join("")
+    + `<div class="nrow"><span class="sw" style="background:var(--n-I)"></span><span class="nn">自由都市</span><span></span><span class="nv">州 ${owned("I").length}</span></div>`
+    + `<p class="diplo">戦争中：${S.diplomacy.wars.map(([a,b])=>NATIONS[a].short+"×"+NATIONS[b].short).join("、")||"なし"}<br>同盟：${S.diplomacy.alliances.map(([a,b])=>NATIONS[a].short+"＝"+NATIONS[b].short).join("、")||"なし"}</p>`
+    + `<div class="confirm">${confirmReset?`今の国を捨てて最初からやり直しますか？ <button class="btn ghost" id="resetYes">やり直す</button><button class="btn ghost" id="resetNo">続ける</button>`:`<button class="btn ghost" id="reset">最初からやり直す</button>`}</div>`;
+
+  app.innerHTML=`<header class="bar">
+      <h1>ヴァルディア年代記</h1><span class="date">${dateLabel(S)}</span>
+      <span class="me"><span class="sw" style="background:var(--n-${P})"></span>${NATIONS[P].name}</span>
+      <div class="stats">
+        <span class="stat">州 <b>${owned(P).length}</b></span>
+        <span class="stat">兵 <b>${me.army}00</b>人${signed(d.army||0)}</span>
+        <span class="stat">国庫 <b>${me.gold}</b>金${signed(d.gold||0)}</span>
+        <span class="stat">安定度 <b>${me.stability}</b>${signed(d.stability||0)}</span>
+      </div>
+    </header>
+    <main>
+      <div class="col">
+        <div class="mapwrap">${mapCanvas("map")}
+          <div class="legend">${Object.keys(NATIONS).map(k=>`<span><span class="sw" style="background:var(--n-${k})"></span>${NATIONS[k].short}</span>`).join("")}</div></div>
+        <div class="info" aria-live="polite">${info}</div>
+        ${ended}${orders}
+      </div>
+      <div class="col">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" data-tab="chron" aria-selected="${tab==="chron"}">年代記</button>
+          <button class="tab" role="tab" data-tab="world" aria-selected="${tab==="world"}">各国の情勢</button>
+        </div>
+        ${tab==="chron"?`<div class="chron">${chron}</div>`:`<div class="nations">${nat}</div>`}
+      </div>
+    </main>`;
+}
+
+let draft="";
+function render(){
+  const box=document.getElementById("cmd"); if(box) draft=box.value;
+  ensureSitu();
+  if(!S) renderStart(); else renderGame();
+  paintMaps();
+  const nb=document.getElementById("cmd"); if(nb) nb.value=draft;
+}
+
+app.addEventListener("input",e=>{ if(e.target.id==="cmd"){ draft=e.target.value; try{localStorage.setItem(KEY+"-draft",draft);}catch(_){} } });
+app.addEventListener("click",e=>{
+  if(e.target.id==="map"){ const id=MAP.hit(e.target,e); sel=(id&&id!==sel)?id:null; render(); return; }
+  const t=e.target.closest("[data-pick],[data-id],[data-sug],[data-tab],button");
+  if(!t) return;
+  if(t.dataset.pick){ pickNation=t.dataset.pick; render(); return; }
+  if(t.id==="begin"){ S=newGame(pickNation); save(); draft=""; render(); return; }
+  if(t.dataset.id){ sel = sel===t.dataset.id?null:t.dataset.id; render(); return; }
+  if(t.dataset.sug){ const b=document.getElementById("cmd"); if(b){ b.value=t.dataset.sug; draft=b.value; b.focus(); } return; }
+  if(t.dataset.tab){ tab=t.dataset.tab; render(); return; }
+  if(t.id==="send"){ sendOrder(); return; }
+  if(t.id==="gsave"){ const k=document.getElementById("gkey"); AI.key=(k&&k.value||"").trim(); const m=document.getElementById("gmodel"); if(m&&m.value) AI.model=m.value.trim(); saveAI(); showAI=true; if(AI.key) loadGeminiModels(); else { aiMsg="キーが空です。"; render(); } return; }
+  if(t.id==="stop"){ ctl&&ctl.abort(); return; }
+  if(t.id==="reset"){ confirmReset=true; render(); return; }
+  if(t.id==="resetNo"){ confirmReset=false; render(); return; }
+  if(t.id==="resetYes"||t.id==="again"){ confirmReset=false; S=null; sel=null; changedIds=new Set(); lastError=""; try{localStorage.removeItem(KEY);}catch(_){} render(); return; }
+});
+app.addEventListener("change",e=>{ if(e.target.id==="gmodel"){ AI.model=e.target.value.trim()||AI.model; saveAI(); showAI=true; render(); } });
+app.addEventListener("toggle",e=>{ if(e.target.classList&&e.target.classList.contains("aiset")) showAI=e.target.open; },true);
+app.addEventListener("keydown",e=>{ if(e.target.id==="cmd"&&e.key==="Enter"&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); sendOrder(); } });
+
+S=load();
+try{ draft=localStorage.getItem(KEY+"-draft")||""; }catch(_){}
+render();
+(async()=>{
+  try{ sampleFn = window.claude ? await window.claude.use("sample") : null; }catch(_){ sampleFn=null; }
+  render();
+})();
+})();
+</script>
+
+</body></html>
