@@ -224,11 +224,17 @@ async function askGemini(prompt,signal){
       method:"POST",signal,headers:{"Content-Type":"application/json","x-goog-api-key":AI.key},
       body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{responseMimeType:"application/json",temperature:0.9}})});
   }catch(e){ if(signal.aborted) throw {code:"cancelled"}; throw {code:"g_network"}; }
-  if(r.status===400||r.status===401||r.status===403) throw {code:"g_key"};
-  if(r.status===404) throw {code:"g_model"};
-  if(r.status===429) throw {code:"rate_limited"};
-  if(!r.ok) throw {code:"upstream_error"};
-  const j=await r.json();
+  if(!r.ok){
+    let msg=""; try{ const ej=await r.json(); msg=(ej.error&&(ej.error.message||ej.error.status))||""; }catch(_){}
+    const detail=`（Gemini ${r.status}${msg?"："+msg.slice(0,160):""}）`;
+    if(/API key|API_KEY|PERMISSION_DENIED|unregistered callers/i.test(msg)||r.status===401||r.status===403) throw {code:"g_key",detail};
+    if(r.status===404) throw {code:"g_model",detail};
+    if(r.status===429) throw {code:"g_quota",detail};
+    if(r.status===503||r.status===500||/overloaded|UNAVAILABLE/i.test(msg)) throw {code:"g_busy",detail};
+    throw {code:"g_other",detail};
+  }
+  let j; try{ j=await r.json(); }catch(_){ throw {code:"invalid_json"}; }
+  if(j.promptFeedback&&j.promptFeedback.blockReason) throw {code:"refused"};
   const text=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts||[]).map(p=>p.text||"").join("");
   if(!text) throw {code:"refused"};
   return parseLoose(text);
@@ -669,7 +675,14 @@ async function sendOrder(){
       code==="g_key"?"GeminiのAPIキーが正しくないようです。「AIの設定」で確かめてください。":
       code==="g_model"?"選んだGeminiのモデルが見つかりません。「AIの設定」で別のモデルを選んでください。":
       code==="g_network"?"Geminiに接続できませんでした。電波を確かめて、もう一度送ってください。":
-      "通信がうまくいきませんでした。もう一度送ってください。";
+      code==="g_quota"?"Geminiの無料で使える回数の上限に達しました。1分ほど待つか、「AIの設定」で別のモデル（名前に lite や flash が付くもの）を選んでください。":
+      code==="g_busy"?"Geminiが混み合っています。少し待って送り直すか、「AIの設定」で別のモデルを選んでください。":
+      code==="g_other"?"Geminiがこの頼み方を受け付けませんでした。「AIの設定」で別のモデルを選んでみてください。":
+      code?"通信がうまくいきませんでした。もう一度送ってください。":
+      "ゲームの中でエラーが起きました。";
+    if(e&&e.detail) lastError+=" "+e.detail;
+    else if(!code&&e) lastError+=`（${String(e.message||e).slice(0,160)}）`;
+    if(code==="g_network") lastError+=`（モデル：${AI.model}）`;
   }
   busy=false; clearInterval(timer); render();
 }
