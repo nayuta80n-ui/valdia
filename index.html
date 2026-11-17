@@ -115,6 +115,11 @@ textarea{width:100%;box-sizing:border-box;min-height:84px;resize:vertical;backgr
 .ncard .v{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .minimap{max-width:520px}
 
+.entry.live{border-left-color:var(--brass);margin-top:4px}
+.entry.live p{white-space:pre-wrap}
+.caret{display:inline-block;width:.5em;height:1em;margin-left:2px;vertical-align:-2px;background:var(--brass);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.caret{animation:none}}
 .prog{display:flex;flex-direction:column;gap:6px}
 .pbar{height:10px;border-radius:999px;background:var(--ink);border:1px solid var(--line);overflow:hidden}
 .pbar i{display:block;height:100%;width:2%;background:var(--brass);border-radius:999px;transition:width .25s linear}
@@ -259,7 +264,7 @@ async function geminiStream(prompt,signal,withThink){
     let j; try{ j=JSON.parse(line.slice(5).trim()); }catch(_){ return; }
     if(j.promptFeedback&&j.promptFeedback.blockReason) blocked=true;
     const parts=(j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts)||[];
-    parts.forEach(p=>{ if(p.thought) return; if(p.text){ if(!text){ prog.phase="write"; prog.writeAt=Date.now(); } text+=p.text; prog.chars=text.length; } });
+    parts.forEach(p=>{ if(p.thought) return; if(p.text){ if(!text){ prog.phase="write"; prog.writeAt=Date.now(); } text+=p.text; prog.chars=text.length; prog.text=text; } });
   };
   try{
     if(r.body&&r.body.getReader){
@@ -301,7 +306,7 @@ async function loadGeminiModels(quiet){
 }
 async function askAI(prompt,signal){
   if(AI.provider==="gemini") return askGemini(prompt,signal);
-  return sampleFn.json(prompt,{signal,cache:false,modelTier:"quick",onText:({text})=>{ if(prog.phase!=="write"){prog.phase="write";prog.writeAt=Date.now();} prog.chars=text.length; }});
+  return sampleFn.json(prompt,{signal,cache:false,modelTier:"quick",onText:({text})=>{ if(prog.phase!=="write"){prog.phase="write";prog.writeAt=Date.now();} prog.chars=text.length; prog.text=text; }});
 }
 let pickNation="A";
 let confirmReset=false;
@@ -700,7 +705,7 @@ async function sendOrder(){
   const box=document.getElementById("cmd"); const cmd=(box.value||"").trim();
   if(!cmd||busy||!aiReady()) return;
   busy=true; lastError=""; ctl=new AbortController(); startedAt=Date.now(); timedOut=false;
-  prog={phase:AI.provider==="claude"?"think":"send",chars:0,writeAt:0};
+  prog={phase:AI.provider==="claude"?"think":"send",chars:0,writeAt:0,text:""};
   render();
   timer=setInterval(()=>{
     const el=(Date.now()-startedAt)/1000;
@@ -745,7 +750,34 @@ async function sendOrder(){
 const app=document.getElementById("app");
 function signed(v){ return v>0?`<span class="d up">+${v}</span>`:v<0?`<span class="d down">${v}</span>`:""; }
 
+function partStr(src,from){
+  // read a JSON string that may still be unfinished
+  let out="", i=from;
+  while(i<src.length){ const ch=src[i];
+    if(ch==="\\"){ const n=src[i+1]; if(n===undefined) break; out+= n==="n"?"\n": n==="t"?" ": n==="u"?String.fromCharCode(parseInt(src.slice(i+2,i+6),16)||32): n; i+= n==="u"?6:2; continue; }
+    if(ch==='"') return {s:out,done:true,end:i+1};
+    out+=ch; i++; }
+  return {s:out,done:false,end:i};
+}
+function partField(src,key){
+  const m=new RegExp('"'+key+'"\\s*:\\s*"').exec(src); if(!m) return null;
+  return partStr(src,m.index+m[0].length);
+}
+function updateLive(){
+  const el=document.getElementById("live"); if(!el) return;
+  const t=prog.text||""; if(!t){ el.hidden=true; return; }
+  const h=partField(t,"headline"), st=partField(t,"story");
+  let ev=[]; const a=t.indexOf('"events"');
+  if(a>=0){ const seg=t.slice(a, (t.indexOf('"transfers"',a)+1||t.length+1)-1); const re=/"text"\s*:\s*"/g; let m; while((m=re.exec(seg))){ const r=partStr(seg,m.index+m[0].length); if(r.s) ev.push(r.s); } }
+  const writing = !st||!st.done ? "story" : "events";
+  el.hidden=false;
+  el.innerHTML=`<div class="when">${esc(dateLabel(S))}（書いている途中）</div>
+    <h3>${h?esc(h.s):""}${h&&!h.done?'<span class="caret"></span>':""}</h3>
+    ${st?`<p>${esc(st.s)}${writing==="story"?'<span class="caret"></span>':""}</p>`:""}
+    ${ev.length?`<ul>${ev.map((x,i)=>`<li>${esc(x)}${i===ev.length-1&&writing==="events"&&!/"transfers"/.test(t)?'<span class="caret"></span>':""}</li>`).join("")}</ul>`:""}`;
+}
 function updateProg(){
+  updateLive();
   const f=document.getElementById("pfill"), t=document.getElementById("ptext"), b=document.getElementById("prog"); if(!f||!t) return;
   const now=Date.now(), el=Math.round((now-startedAt)/1000), who=AI.provider==="gemini"?"Gemini":"AI";
   let pct, msg;
@@ -807,7 +839,7 @@ function renderGame(){
         ${busy?`<button class="btn ghost" id="stop">中止</button>`:""}
         ${busy?"":`<span class="status ${lastError?"err":""}" id="status">${esc(lastError)||(ready?"":notReadyMsg)}</span>`}
       </div>
-      ${busy?`<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="prog"><div class="pbar"><i id="pfill"></i></div><div class="ptext" id="ptext">送っています…</div></div>`:""}
+      ${busy?`<div class="prog" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="prog"><div class="pbar"><i id="pfill"></i></div><div class="ptext" id="ptext">送っています…</div></div><article class="entry live" id="live" hidden></article>`:""}
       ${aiPanelHTML()}
     </section>`;
 
