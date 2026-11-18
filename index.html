@@ -16,7 +16,8 @@
   --brass:#d2a64a;      /* accent: seals, buttons */
   --danger:#e06a5a;
   --ok:#7fc29b;
-  --n-A:#d9b44a; --n-N:#7fb2d9; --n-S:#9a7fd0; --n-K:#c8504a; --n-V:#6aa35a; --n-Z:#d08a4a; --n-I:#8c8f96;
+  --n-A:#d9b44a; --n-N:#7fb2d9; --n-S:#a070e0; --n-K:#c8504a; --n-V:#6aa35a; --n-Z:#d08a4a;
+  --n-G:#e2e5ea; --n-T:#8a6a4a; --n-R:#d77fa8; --n-M:#2ccff2; --n-O:#2f55f0; --n-W:#1f8f78; --n-I:#73767c;
   --display:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
   --body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
 }
@@ -144,28 +145,38 @@ textarea{width:100%;box-sizing:border-box;min-height:84px;resize:vertical;backgr
 (() => {
 /* ---------- world data ---------- */
 const NATIONS = {
-  A:{name:"アウレア王国",short:"アウレア",capital:"アウレリア",desc:"大陸の中央、豊かな麦畑を治める古い王家。周りを全部の国に囲まれている。",army:120,gold:900,stability:70},
-  N:{name:"ノルドヴァル連邦",short:"ノルドヴァル",capital:"ノルドヘイム",desc:"北の凍った土地の氏族たちの連合。兵は強いがお金と食べ物が足りない。",army:150,gold:400,stability:62},
+  A:{name:"アウレア王国",short:"アウレア",capital:"アウレリア",desc:"大陸の中央、豊かな麦畑を治める古い王家。まわりを多くの国に囲まれている。",army:120,gold:900,stability:70},
+  N:{name:"ノルドヴァル連邦",short:"ノルドヴァル",capital:"ノルドヘイム",desc:"北東の凍った土地の氏族たちの連合。兵は強いがお金と食べ物が足りない。",army:150,gold:400,stability:62},
   K:{name:"カルザ帝国",short:"カルザ",capital:"カルザグラード",desc:"東の山あいの軍事大国。皇帝は大陸の統一を夢見ている。",army:200,gold:600,stability:55},
   V:{name:"ヴェルデ森林連合",short:"ヴェルデ",capital:"ヴェルデン",desc:"西の深い森の村々。守りに強く、よそ者を嫌う。",army:90,gold:350,stability:78},
   S:{name:"セリム商業同盟",short:"セリム",capital:"セリマーレ",desc:"南の港町を結ぶ商人の同盟。お金はあるが兵は雇い物。",army:60,gold:1500,stability:60},
   Z:{name:"ザハル首長国",short:"ザハル",capital:"ザハラーン",desc:"南東の砂漠の首長たち。隊商の道とラクダ騎兵を持つ。",army:110,gold:700,stability:58},
+  G:{name:"グラシエ山岳同盟",short:"グラシエ",capital:"グラシエルン",desc:"北西の高い山々にある鉱山町の同盟。鉄と石の砦を持つが、人は少ない。",army:100,gold:650,stability:72},
+  T:{name:"タルガ騎馬民",short:"タルガ",capital:"タルガン",desc:"北の大草原を移り住む騎馬の部族たち。馬の数は大陸一だが、町や畑は少ない。",army:170,gold:300,stability:55},
+  R:{name:"ロウエン公国",short:"ロウエン",capital:"ロウエンブルク",desc:"大河が流れる大陸中東部の公国。川の港と長槍の兵が自慢。",army:100,gold:800,stability:66},
+  M:{name:"ミストラ諸島王国",short:"ミストラ",capital:"ミストラル",desc:"西の海に浮かぶ島々の王国。大陸一の船団を持つが、陸の兵は少ない。",army:70,gold:900,stability:68},
+  O:{name:"オルビア神殿国",short:"オルビア",capital:"オルビオン",desc:"南の丘に大神殿を持ち、神官たちが治める国。人々のまとまりが強い。",army:90,gold:750,stability:85},
+  W:{name:"ムーラ湿原部族",short:"ムーラ",capital:"ムラサ",desc:"南西の霧深い湿原に住む部族。沼地を味方にした奇襲が得意。",army:80,gold:250,stability:70},
   I:{name:"自由都市",short:"自由都市",desc:"どの国にも属さない町。",neutral:true},
 };
-const PLAYABLE = ["A","N","K","V","S","Z"];
+const PLAYABLE = ["A","N","K","V","S","Z","G","T","R","M","O","W"];
 const MAPROWS = [
-  "..NNNN.....",
-  ".NNNNN.KK..",
-  ".VVANN.KKK.",
-  "VVVAAIKKKK.",
-  ".VVAAAIKKK.",
-  ".VVAAISSK..",
-  "..VISSSZZ..",
-  "...SSZZZZZ.",
-  "....ZZZZ...",
+  "......GGG..TTTTT..NNN.",
+  ".....GGGGTTTTTTTNNNNN.",
+  "....GGGGGTTTTTTINNNNN.",
+  "...VGGGGIAATTTRNNNKKK.",
+  "..VVVVGAAAAARRRRKKKKK.",
+  "..VVVVVAAAAIRRRRKKKKK.",
+  ".MVVVVVAAAARRRIKKKKKK.",
+  "MM.WWVVSSAAORRRZZKKK..",
+  "MM.WWWWSSSOOOOIZZZZK..",
+  "MMM.WWWSSSOOOOZZZZZZ..",
+  "MM..WWSSSI.OOOZZZZZ...",
+  ".....SSSS...OO.ZZZ....",
+  "......SS..............",
 ];
-const CAPITALS = {A:[4,4],N:[1,3],K:[2,8],V:[3,1],S:[6,5],Z:[7,7]};
-const TERRAIN = {A:"平原",N:"雪原",K:"山地",V:"森",S:"平原",Z:"砂漠",I:"都市"};
+const CAPITALS = {G:[2,6],T:[1,12],N:[2,18],V:[5,4],A:[5,8],R:[5,13],K:[5,18],M:[8,0],W:[8,5],S:[9,8],O:[9,11],Z:[9,16]};
+const TERRAIN = {A:"平原",N:"雪原",K:"山地",V:"森",S:"平原",Z:"砂漠",G:"山地",T:"草原",R:"平原",M:"平原",O:"丘陵",W:"湿地",I:"都市"};
 const SYL = {
   A:[["アル","ベル","カス","リオ","マル","ソレ","ヴィ","ロザ","エル","トゥ"],["ディア","モント","ヴァーレ","リナ","ガルド","ファン","セル"]],
   N:[["フロ","スカ","ヘル","ヨル","ヴァル","クロ","オス","ティル"],["ヘイム","ガルド","ヴィク","スタッド","フィヨル","ボルグ","ネス"]],
@@ -173,8 +184,14 @@ const SYL = {
   V:[["シル","ルー","ミナ","ウィロ","フェン","オル","ネア","リン"],["ウッド","ヘイヴン","グレン","ミア","ローン","デル","ブルク"]],
   S:[["セラ","マリ","ポル","カプ","ネリ","ヴェン","オルタ","ルチ"],["ポート","マーレ","ノーヴァ","ツィア","リエ","ベル","ラ"]],
   Z:[["ザハ","アル","カシ","メル","スー","ハダ","タリ","ジャ"],["ラーン","ブール","ミーラ","ダン","カール","サフ","ド"]],
+  G:[["グラ","アイ","ブリ","ストン","エーデ","ハル","ギル","モル"],["ホルン","シュタイン","ベルク","クラム","ガッフ","ツィネ","フェル"]],
+  T:[["タル","オル","バト","ケレ","ジャム","ウラ","テム","ボグ"],["ガン","ダイ","チン","スル","ボル","ハン","ト"]],
+  R:[["ロウ","リヒ","エム","ヴァイ","ハイ","ズィー","アル","クラ"],["ブルク","フルト","ハーフェン","ドルフ","ブリュク","ミュンデ","ウ"]],
+  M:[["ミス","カリ","ラナ","ペレ","オリ","ナウ","シア","トロ"],["トラ","ノス","ミア","ケイ","ロス","ティア","ネ"]],
+  O:[["オル","セレ","ルミ","カン","ヘリ","アウ","ソラ","エリ"],["ビオン","ティア","ナス","デル","オーラ","メス","ア"]],
+  W:[["ムー","ラサ","ボグ","ニャ","ケム","ワル","スゥ","ドゥ"],["ラ","ガ","メ","トゥ","ンバ","ワ","ク"]],
 };
-const FREE = ["オルドン","ペリカ","ハースト","ミドラ"];
+const FREE = ["オルドン","ペリカ","ハースト","ミドラ","ヴェスタ","ロンバ"];
 
 function buildProvinces(){
   const list=[], used=new Set(Object.values(NATIONS).map(n=>n.capital).filter(Boolean)), count={};
@@ -206,7 +223,7 @@ function buildProvinces(){
 }
 
 /* ---------- state ---------- */
-const KEY="valdia-save-v1";
+const KEY="valdia-save-v2";
 let S=null;           // game state
 let sel=null;         // selected province id
 let tab="chron";
@@ -231,7 +248,7 @@ function parseLoose(t){
   throw {code:"invalid_json"};
 }
 let prog={phase:"send",chars:0,writeAt:0};
-const EXPECT=2000;
+const EXPECT=3200;
 function thinkCfg(m){
   if(/gemini-2\.5-flash/.test(m)) return {thinkingBudget:0};
   if(/gemini-2\.5-pro/.test(m)) return {thinkingBudget:128};
@@ -316,23 +333,30 @@ function newGame(code){
   const provs=buildProvinces();
   const nations={};
   Object.keys(NATIONS).forEach(k=>{ if(!NATIONS[k].neutral){const n=NATIONS[k]; nations[k]={army:n.army,gold:n.gold,stability:n.stability};} });
-  return {v:1,player:code,turn:0,year:812,season:"春",provinces:provs.map(p=>({id:p.id,owner:p.owner})),
-    nations, diplomacy:{wars:[["K","N"]],alliances:[["A","S"]]}, log:[], suggestions:defaultSuggestions(code), lastDelta:{}, ended:null};
+  return {v:2,player:code,turn:0,year:812,season:"春",provinces:provs.map(p=>({id:p.id,owner:p.owner})),
+    nations, diplomacy:JSON.parse(JSON.stringify(START_DIP)), log:[], suggestions:defaultSuggestions(code), lastDelta:{}, ended:null};
 }
+const START_DIP={wars:[["K","N"],["T","G"]],alliances:[["A","S"],["O","Z"]]};
 const START_SITU={
-  A:{aim:"王家の力を守る",text:"豊かな麦畑を持つが、四方を他国に囲まれて落ち着かない。セリムとは古い同盟がある。"},
+  A:{aim:"王家の力を守る",text:"豊かな麦畑を持つが、まわりを多くの国に囲まれて落ち着かない。セリムとは古い同盟がある。"},
   N:{aim:"カルザを押し返す",text:"カルザ帝国との戦争が続き、冬を前に食料が足りなくなりつつある。"},
-  K:{aim:"大陸の統一",text:"皇帝はノルドヴァルとの戦争を進め、さらに南へ目を向けている。"},
+  K:{aim:"大陸の統一",text:"皇帝はノルドヴァルとの戦争を進め、さらに西へ目を向けている。"},
   V:{aim:"森を守る",text:"森の村々は戦争から距離をおき、よそ者を警戒している。"},
   S:{aim:"交易でもうける",text:"港はにぎわっているが、自前の兵が少なく、守りを傭兵に頼っている。"},
-  Z:{aim:"隊商の道を広げる",text:"首長たちは隊商の道を広げようとしているが、内輪もめも多い。"},
+  Z:{aim:"隊商の道を広げる",text:"オルビアと同盟を結び、隊商の道を広げようとしているが、首長どうしの内輪もめも多い。"},
+  G:{aim:"山の砦を守る",text:"北のタルガ騎馬民と戦争中。山の砦は堅いが、兵の数で押されている。"},
+  T:{aim:"山の鉄を奪う",text:"グラシエの鉱山を狙って戦争を始めた。草原の馬は数えきれない。"},
+  R:{aim:"川を支配する",text:"大河の通行税で豊か。東のカルザと西のアウレアの間で揺れている。"},
+  M:{aim:"海の道を握る",text:"島々の船団は強いが、陸の兵は少ない。大陸の港を欲しがっている。"},
+  O:{aim:"教えを広める",text:"ザハルと同盟を結び、南の大地で信者を増やしている。"},
+  W:{aim:"湿原を守る",text:"霧深い湿原にこもり、外の国とはあまり関わらない。"},
 };
 const ATT=["友好","中立","警戒","敵対"];
-function startAttitude(P,k){ const d={wars:[["K","N"]],alliances:[["A","S"]]}; if(pairHas(d.alliances,P,k)) return "友好"; if(pairHas(d.wars,P,k)) return "敵対"; return k==="K"?"警戒":"中立"; }
+function startAttitude(P,k){ const d=START_DIP; if(pairHas(d.alliances,P,k)) return "友好"; if(pairHas(d.wars,P,k)) return "敵対"; return (k==="K"||k==="T")?"警戒":"中立"; }
 function ensureSitu(){
   if(!S) return;
   if(!S.situ){ S.situ={}; Object.keys(S.nations).forEach(k=>S.situ[k]={aim:START_SITU[k].aim,text:START_SITU[k].text,attitude:k===S.player?"":startAttitude(S.player,k)}); }
-  if(S.worldNote===undefined) S.worldNote="北ではカルザ帝国とノルドヴァル連邦が戦争中。ほかの国々は様子をうかがっている。";
+  if(S.worldNote===undefined) S.worldNote="北ではカルザ帝国とノルドヴァル連邦、タルガ騎馬民とグラシエ山岳同盟がそれぞれ戦争中。南ではオルビアとザハルが手を結んだ。";
 }
 function defaultSuggestions(code){
   return {
@@ -342,12 +366,18 @@ function defaultSuggestions(code){
     V:["森の砦を固め、弓兵を育てる","自由都市を味方につける","アウレアの西の州へ奇襲をかける"],
     S:["傭兵を大量に雇う","カルザに武器を売ってもうける","自由都市を買い取る交渉をする"],
     Z:["隊商の道を広げ、国庫を増やす","ラクダ騎兵でセリムの港を襲う","カルザと同盟を結ぶ"],
+    G:["鉄を売って国庫を増やす","タルガの騎馬を山の砦で迎え撃つ","アウレアと同盟を結ぶ"],
+    T:["グラシエの山へ攻め込む","ノルドヴァルと手を組み、カルザを北から攻める","南の麦畑を略奪する"],
+    R:["川の通行税を上げて国庫を増やす","カルザの西の州を奪う","アウレアと同盟を結ぶ"],
+    M:["船団で沿岸の州を襲う","セリムと交易の約束を結ぶ","ムーラの湿原に港を作る"],
+    O:["神官を各国に送り、味方を増やす","ザハルとの同盟を深める","セリムの港を攻め落とす"],
+    W:["霧にまぎれてヴェルデの森を襲う","ミストラの船乗りと手を組む","湿原の砦を固める"],
   }[code];
 }
 let PROV_META = buildProvinces(); // static geometry and names
 const META = Object.fromEntries(PROV_META.map(p=>[p.id,p]));
 
-function load(){ try{ const t=localStorage.getItem(KEY); if(t){ const s=JSON.parse(t); if(s&&s.v===1) return s; } }catch(e){} return null; }
+function load(){ try{ const t=localStorage.getItem(KEY); if(t){ const s=JSON.parse(t); if(s&&s.v===2) return s; } }catch(e){} return null; }
 function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
 
 const owner = id => S.provinces.find(p=>p.id===id).owner;
@@ -360,7 +390,7 @@ const esc = t => String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">"
 /* ---------- map ---------- */
 /* ---------- fantasy map (canvas) ---------- */
 const MAP = (() => {
-  const Rp=44, Wp=Math.sqrt(3)*Rp, ROWS=MAPROWS.length, COLS=MAPROWS[0].length;
+  const Rp=36, Wp=Math.sqrt(3)*Rp, ROWS=MAPROWS.length, COLS=MAPROWS[0].length;
   const CW=Math.round((COLS+1.4)*Wp), CH=Math.round(((ROWS-1)*1.5+2.6)*Rp);
   const NP=PROV_META.length;
   function hash(a,b,s){ let h=(Math.imul(a,374761393)+Math.imul(b,668265263)+Math.imul(s,1442695041))|0; h=Math.imul(h^(h>>>13),1274126177); h^=h>>>16; return (h>>>0)/4294967296; }
@@ -375,7 +405,7 @@ const MAP = (() => {
     const i=(r>=0&&r<ROWS&&c>=0&&c<COLS&&idxAt[r+","+c]!==undefined)?idxAt[r+","+c]:-1;
     v={x:(c+.5*(r&1)+.95)*Wp+(hash(r,c,7)-.5)*.6*Rp, y:(r*1.5+1.3)*Rp+(hash(r,c,9)-.5)*.6*Rp, i}; cells.set(k,v); return v; }
   const TERR=PROV_META.map(p=>p.terrain.split("・")[0]);
-  const TC={"平原":[226,210,163],"雪原":[236,238,234],"山地":[210,190,150],"森":[196,200,148],"砂漠":[236,211,150],"都市":[220,204,170]};
+  const TC={"草原":[214,214,152],"丘陵":[220,200,150],"湿地":[178,192,152],"平原":[226,210,163],"雪原":[236,238,234],"山地":[210,190,150],"森":[196,200,148],"砂漠":[236,211,150],"都市":[220,204,170]};
   const INK="#3b2f24";
   let B=null;      // static base
   const comp=new Map();
@@ -436,7 +466,7 @@ const MAP = (() => {
     const avoid=PROV_META.map((p,i)=>(p.capital||p.origin==="I")?cen[i]:null).filter(Boolean);
     const okAt=(x,y,i)=>{ x|=0; y|=0; if(x<8||y<8||x>CW-9||y>CH-9) return false; const k=y*CW+x;
       return look[k]===i && landD[k]>9 && look[k-8]===i && look[k+8]===i && look[k-7*CW]===i && look[k+6*CW]===i; };
-    const WANT={"平原":4,"雪原":6,"山地":7,"森":11,"砂漠":5,"都市":3};
+    const WANT={"草原":4,"丘陵":5,"湿地":7,"平原":4,"雪原":6,"山地":7,"森":11,"砂漠":5,"都市":3};
     PROV_META.forEach((p,i)=>{
       const R=rng(1000+i), want=WANT[TERR[i]]; let got=0;
       for(let t=0;t<90&&got<want;t++){
@@ -473,7 +503,13 @@ const MAP = (() => {
       const w=10*s;
       c.beginPath(); c.moveTo(x-w,y); c.quadraticCurveTo(x-w*.2,y-7*s,x+w*.5,y-1); c.stroke();
       c.beginPath(); c.moveTo(x-w*.1,y+4); c.quadraticCurveTo(x+w*.5,y-2*s,x+w,y+3); c.stroke();
-    } else if(t==="平原"){
+    } else if(t==="丘陵"){
+      const w=8*s; c.beginPath(); c.moveTo(x-w,y); c.quadraticCurveTo(x,y-9*s,x+w,y); c.fillStyle="#cdb684"; c.fill(); c.stroke();
+      c.beginPath(); c.moveTo(x-w*.2,y-5*s); c.lineTo(x+w*.4,y-2*s); c.stroke();
+    } else if(t==="湿地"){
+      c.lineWidth=1.1; c.fillStyle="rgba(70,110,110,.45)"; c.beginPath(); c.ellipse(x,y+1,7*s,2.4*s,0,0,7); c.fill();
+      for(let j=-1;j<=1;j++){ c.beginPath(); c.moveTo(x+j*3,y); c.lineTo(x+j*3.6,y-7*s); c.stroke(); }
+    } else if(t==="平原"||t==="草原"){
       c.lineWidth=1.1;
       for(let j=-1;j<=1;j++){ c.beginPath(); c.moveTo(x+j*4,y); c.lineTo(x+j*4+1.5,y-5*s); c.stroke(); }
     } else {
@@ -518,7 +554,7 @@ const MAP = (() => {
     const F=fi.data, L=li.data;
     for(let y=2;y<CH-2;y++) for(let x=2;x<CW-2;x++){
       const k=y*CW+x, i=look[k]; if(i<0) continue; const o=k*4, ow=own[i], c=col[ow];
-      F[o]=c[0]; F[o+1]=c[1]; F[o+2]=c[2]; F[o+3]=ow==="I"?60:120;
+      F[o]=c[0]; F[o+1]=c[1]; F[o+2]=c[2]; F[o+3]=ow==="I"?60:140;
       let nb=false, nb2=false, pe=false, pe2=false;
       const n1=[k-1,k+1,k-CW,k+CW], n2=[k-2,k+2,k-2*CW,k+2*CW];
       for(const q of n1){ const j=look[q]; if(j>=0&&own[j]!==ow) nb=true; if(j!==i) pe=true; }
@@ -550,12 +586,12 @@ const MAP = (() => {
     });
     // seas
     c.font=`700 18px ${DF}`; c.fillStyle="rgba(28,52,62,.62)"; c.strokeStyle="rgba(0,0,0,0)"; c.lineWidth=0;
-    spaced(c,"北の凍海",CW*.78,CH*.065,18,.6);
-    spaced(c,"南の陽光海",CW*.18,CH*.93,18,.6);
-    spaced(c,"霧の海",CW*.08,CH*.06,16,.5);
-    c.save(); c.translate(CW-24,CH*.5); [..."東の果て海"].forEach((ch,j)=>c.fillText(ch,0,(j-2)*22)); c.restore();
+    spaced(c,"北の凍海",CW*.13,CH*.07,18,.6);
+    spaced(c,"南の陽光海",CW*.66,CH*.95,18,.6);
+    spaced(c,"霧の海",CW*.045,CH*.4,15,.3);
+    c.save(); c.translate(CW-22,CH*.42); [..."東の果て海"].forEach((ch,j)=>c.fillText(ch,0,(j-2)*21)); c.restore();
     // compass rose
-    compass(c,CW-70,CH-62,26,DF);
+    compass(c,CW*.09,CH-58,24,DF);
     // frame
     c.strokeStyle=INK; c.lineWidth=3; c.strokeRect(5,5,CW-10,CH-10); c.lineWidth=1; c.strokeRect(10,10,CW-20,CH-20);
     if(comp.size>12) comp.clear();
@@ -601,7 +637,7 @@ function worldText(){
     lines.push(`${k}=${NATIONS[k].name}: ${c?`州${c} 兵${n.army}00人 国庫${n.gold}金 安定度${n.stability}`:"滅亡"} — ${NATIONS[k].desc}`);
   });
   lines.push(`I=自由都市（中立の町、国ではない）`);
-  const pl=S.provinces.map(p=>{const m=META[p.id]; return `${p.id} ${m.name}[${p.owner}]${m.terrain}${m.capital&&p.owner===m.origin?"・首都":""} 隣:${m.nb.join(",")}`;});
+  const pl=S.provinces.map(p=>{const m=META[p.id]; return `${p.id} ${m.name}[${p.owner}]${m.terrain}${m.capital&&p.owner===m.origin?"・首都":""} 隣:${m.nb.map(n=>n.slice(1)).join(",")}`;});
   return {nations:lines.join("\n"), provinces:pl.join("\n")};
 }
 function buildPrompt(cmd){
@@ -614,7 +650,7 @@ function buildPrompt(cmd){
 - もっともらしく公平に。無茶な命令は失敗したり、代償を払ったりしてよい。うまい作戦は報われる。
 - 兵・国庫・安定度・地形・距離・同盟関係を考えて結果を決める。
 - 他の国（AI）も自分の目的で動く：同盟、裏切り、戦争、内乱、疫病、豊作など。毎ターン1〜3件、他国の動きを入れる。
-- 州の持ち主が変わるのは、戦争・反乱・買収・自由都市の合流などのときだけ。新しい持ち主がすでに隣の州を持っていること。1ターンで全体で最大5州まで。首都は落ちにくい。
+- 州の持ち主が変わるのは、戦争・反乱・買収・自由都市の合流などのときだけ。新しい持ち主がすでに隣の州を持っていること。1ターンで全体で最大7州まで。首都は落ちにくい。
 - 数値の変化（差分）の目安：兵は ±0〜60（単位は百人）、国庫は ±0〜400、安定度は ±0〜15。毎ターン、州の数に応じて少し国庫が入り、兵の維持でお金が減る。
 - 現実の国名・人名・宗教は出さない。人物の名前は架空のカタカナ名で。
 - 文章は日本語。むずかしい漢字や専門用語は避け、物語として楽しく。
@@ -630,7 +666,7 @@ ${Object.keys(S.nations).filter(k=>alive(k)).map(k=>`${k}: ねらい「${S.situ[
 戦争中: ${S.diplomacy.wars.map(p=>p.join("×")).join("、")||"なし"}
 同盟: ${S.diplomacy.alliances.map(p=>p.join("＝")).join("、")||"なし"}
 
-# 州（id 名前[持ち主]地形 隣の州）
+# 州（id 名前[持ち主]地形 隣の州の番号。例：隣:12 は p12 のこと）
 ${w.provinces}
 
 # これまでの出来事
@@ -662,7 +698,7 @@ function applyTurn(cmd,res){
   const nat=new Set(Object.keys(S.nations));
   changedIds=new Set();
   const transfers=[];
-  (Array.isArray(res.transfers)?res.transfers:[]).slice(0,6).forEach(t=>{
+  (Array.isArray(res.transfers)?res.transfers:[]).slice(0,8).forEach(t=>{
     const p=S.provinces.find(x=>x.id===String(t&&t.province)); const to=String(t&&t.to);
     if(!p||!valid.has(to)||p.owner===to) return;
     const ok=to==="I"||META[p.id].nb.some(n=>owner(n)===to);
@@ -806,7 +842,7 @@ function renderStart(){
   const n=NATIONS[pickNation];
   app.innerHTML=`<div class="start">
     <div class="lead"><h1>ヴァルディア年代記</h1>
-    <p>六つの国がひしめく架空の大陸ヴァルディア。ひとつの国の君主になり、言葉で命令を出してください。半年ごとに、AIの年代記作家があなたの命令と他の国の動きを歴史として書いていきます。大陸の4分の3を治めれば統一、すべての州を失えば滅亡です。</p></div>
+    <p>十二の国がひしめく架空の大陸ヴァルディア。ひとつの国の君主になり、言葉で命令を出してください。半年ごとに、AIの年代記作家があなたの命令と他の国の動きを歴史として書いていきます。大陸の4分の3を治めれば統一、すべての州を失えば滅亡です。</p></div>
     <div class="minimap mapwrap">${mapCanvas("mini")}</div>
     <div class="pick">${PLAYABLE.map(k=>{const x=NATIONS[k];const c=PROV_META.filter(p=>p.origin===k).length;return `<button class="ncard" data-pick="${k}" aria-pressed="${k===pickNation}">
       <span class="t"><span class="sw" style="background:var(--n-${k})"></span>${x.name}</span>
